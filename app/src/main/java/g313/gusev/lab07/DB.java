@@ -1,9 +1,12 @@
 package g313.gusev.lab07;
 
+import static android.app.ProgressDialog.show;
+
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.widget.Toast;
 
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
@@ -25,10 +28,15 @@ public class DB extends SQLiteOpenHelper {
 
     }
 
-    public void insert(String key, String value) {
+    public boolean insert(String key, String value) {
         String sql = "INSERT INTO MyText VALUES('" + key + "', '" + value + "');";
         SQLiteDatabase db = getWritableDatabase();
-        db.execSQL(sql);
+        if (select(key) != "") {
+            return false;
+        } else {
+            db.execSQL(sql);
+            return true;
+        }
     }
 
     public String select(String key) {
@@ -36,25 +44,35 @@ public class DB extends SQLiteOpenHelper {
         SQLiteDatabase db = getReadableDatabase();
         Cursor cur = db.rawQuery(sql, null);
 
-        if (cur.moveToFirst() == true)
+        if (cur.moveToFirst() == true) {
             return cur.getString(0);
+        }
 
-        return "(!) not found";
+        return "";
     }
 
-    public void update(String key, String value) {
+    public boolean update(String key, String value) {
         String sql = "UPDATE MyText SET MyValue = '" + value + "' WHERE MyKey = '" + key + "';";
         SQLiteDatabase db = getWritableDatabase();
-        db.execSQL(sql);
+        if (select(key) != "") {
+            db.execSQL(sql);
+            return true;
+        } else
+            return false;
     }
 
-    public void delete(String key) {
+    public boolean delete(String key) {
         String sql = "DELETE FROM MyText WHERE MyKey = '" + key + "';";
         SQLiteDatabase db = getWritableDatabase();
         Cursor cur = db.rawQuery(sql, null);
 
-        if (cur.moveToFirst() == true)
-            db.execSQL(sql);
+        if (select(key) != "") {
+            if (cur.moveToFirst() == true) {
+                db.execSQL(sql);
+            }
+            return true;
+        } else
+            return false;
     }
 
 }
